@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdint.h>
 
 #define ARENA_LITE_IMPLEMENTATION
 #include "ArenaLite.h"
-
-#define COUNT 10000
 
 typedef struct { float x,y,z; } Vec3;
 
@@ -25,9 +24,9 @@ int main(void) {
     assert(((uintptr_t)v % _Alignof(Vec3)) == 0);
 
     Vec3 *first = v;
-    Vec3 *last = NULL;
+    Vec3 *last  = NULL;
 
-    for (int i = 0; i < COUNT; ++i) {
+    for (int i = 0; i < 10000; ++i) {
         Vec3 *p = Arena_Add(&arena, Vec3);
         assert(p && "Arena ran out of memory");
 
@@ -36,6 +35,27 @@ int main(void) {
         p->z = (float)i + 2;
 
         last = p;
+    }
+
+    const size_t N = 256;
+    Vec3 *arr = Arena_AddN(&arena, Vec3, N);
+    assert(arr && "Arena_AddN failed");
+
+    assert(((uintptr_t)arr % _Alignof(Vec3)) == 0);
+
+    for (size_t i = 1; i < N; ++i) {
+        assert(&arr[i] == arr + i);
+    }
+
+    for (size_t i = 0; i < N; ++i) {
+        arr[i].x = (float)i;
+        arr[i].y = (float)i + 10.0f;
+        arr[i].z = (float)i + 20.0f;
+    }
+    for (size_t i = 0; i < N; ++i) {
+        assert(arr[i].x == (float)i);
+        assert(arr[i].y == (float)i + 10.0f);
+        assert(arr[i].z == (float)i + 20.0f);
     }
 
     assert(first->x == 1.0f);

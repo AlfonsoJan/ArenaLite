@@ -11,6 +11,7 @@
 #define ARENA_LITEDEF
 #endif // ARENA_LITEDEF
 
+// Define ARENA_LITE_INITAL_SIZE if you want a smaller initial size
 #define ARENA_LITE_INITAL_SIZE (1024*4)
 
 typedef struct ArenaLiteBlock {
@@ -25,6 +26,7 @@ typedef struct {
 } ArenaLite;
 
 #define Arena_Add(a, T) ((T*)__arena_alloc_align((a), sizeof(T), _Alignof(T)))
+#define Arena_AddN(a, T, n) ((T*)__arena_alloc_align((a), sizeof(T) * (size_t)(n), _Alignof(T)))
 
 static inline void *__arena_alloc_align(ArenaLite *a, size_t size, size_t align);
 

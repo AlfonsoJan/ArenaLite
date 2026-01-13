@@ -1,0 +1,4 @@
+
+test/*
+!test/Makefile
+!test/test.c

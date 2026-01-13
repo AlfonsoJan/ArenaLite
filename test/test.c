@@ -11,7 +11,7 @@ typedef struct { float x,y,z; } Vec3;
 int main(void) {
     ArenaLite arena = {0};
 
-    Vec3 *v = Arena_T(&arena, Vec3);
+    Vec3 *v = Arena_Add(&arena, Vec3);
     assert(v && "Arena allocation failed");
 
     v->x = 1.0f;
@@ -28,7 +28,7 @@ int main(void) {
     Vec3 *last = NULL;
 
     for (int i = 0; i < COUNT; ++i) {
-        Vec3 *p = Arena_T(&arena, Vec3);
+        Vec3 *p = Arena_Add(&arena, Vec3);
         assert(p && "Arena ran out of memory");
 
         p->x = (float)i;
@@ -49,7 +49,7 @@ int main(void) {
 
     arena_lite_reset(&arena);
 
-    Vec3 *v2 = Arena_T(&arena, Vec3);
+    Vec3 *v2 = Arena_Add(&arena, Vec3);
     assert(v2 && "Allocation after reset failed");
 
     assert(v2 == first || v2 != NULL);

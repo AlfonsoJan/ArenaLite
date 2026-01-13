@@ -24,7 +24,7 @@ typedef struct {
     ArenaLiteBlock *head;
 } ArenaLite;
 
-#define Arena_T(a, T) ((T*)__arena_alloc_align((a), sizeof(T), _Alignof(T)))
+#define Arena_Add(a, T) ((T*)__arena_alloc_align((a), sizeof(T), _Alignof(T)))
 
 static inline void *__arena_alloc_align(ArenaLite *a, size_t size, size_t align);
 

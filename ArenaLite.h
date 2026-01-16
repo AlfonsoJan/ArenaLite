@@ -25,6 +25,11 @@ typedef struct {
     ArenaLiteBlock *head;
 } ArenaLite;
 
+typedef struct {
+    ArenaLiteBlock *block;
+    size_t offset;
+} ArenaLiteMark;
+
 #define Arena_Add(a, T) ((T*)__arena_alloc_align((a), sizeof(T), _Alignof(T)))
 #define Arena_AddN(a, T, n) ((T*)__arena_alloc_align((a), sizeof(T) * (size_t)(n), _Alignof(T)))
 
@@ -32,6 +37,8 @@ static inline void *__arena_alloc_align(ArenaLite *a, size_t size, size_t align)
 
 ARENA_LITEDEF void arena_lite_reset(ArenaLite *a);
 ARENA_LITEDEF void arena_lite_free(ArenaLite *a);
+ARENA_LITEDEF ArenaLiteMark arena_lite_mark(ArenaLite *a);
+ARENA_LITEDEF void arena_lite_rewind(ArenaLite *a, ArenaLiteMark m);
 
 #ifdef ARENA_LITE_IMPLEMENTATION
 
@@ -105,6 +112,30 @@ ARENA_LITEDEF void arena_lite_free(ArenaLite *a) {
         b = next;
     }
     a->head = NULL;
+}
+
+ARENA_LITEDEF ArenaLiteMark arena_lite_mark(ArenaLite *a) {
+    ArenaLiteMark m;
+    m.block  = a ? a->head : NULL;
+    m.offset = (a && a->head) ? a->head->offset : 0;
+    return m;
+}
+
+ARENA_LITEDEF void arena_lite_rewind(ArenaLite *a, ArenaLiteMark m) {
+    if (!a) return;
+    if (m.block == NULL) {
+        arena_lite_free(a);
+        return;
+    }
+    while (a->head && a->head != m.block) {
+        ArenaLiteBlock *next = a->head->next;
+        free(a->head->base);
+        free(a->head);
+        a->head = next;
+    }
+    assert(a->head == m.block && "arena_lite_rewind: mark does not belong to this arena (or was already freed)");
+    assert(m.offset <= a->head->capacity && "arena_lite_rewind: mark offset out of range");
+    a->head->offset = m.offset;
 }
 
 #endif // ARENA_LITE_IMPLEMENTATION
